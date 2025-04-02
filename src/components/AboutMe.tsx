@@ -1,16 +1,21 @@
-import {base_url, period_month} from "../utils/constants.ts";
+import {characters, defaultHero, period_month} from "../utils/constants.ts";
 import {useEffect, useState} from "react";
 import {HeroInfo} from "../utils/types";
+import {useParams} from "react-router";
 
 const AboutMe = () => {
     const [hero, setHero] = useState<HeroInfo>();
+    let {heroId = defaultHero} = useParams();
 
     useEffect(() => {
-        const hero = JSON.parse(localStorage.getItem("hero")!);
+        if(!characters[heroId]){
+            heroId = defaultHero;
+        }
+        const hero = JSON.parse(localStorage.getItem(heroId)!);
         if (hero && ((Date.now() - hero.timestamp) < period_month)) {
             setHero(hero.payload);
         } else {
-            fetch(`${base_url}/v1/peoples/1`)
+            fetch(characters[heroId].url)
                 .then(response => response.json())
                 .then(data => {
                     const info = {
@@ -24,39 +29,24 @@ const AboutMe = () => {
                         eye_color: data.eye_color
                     }
                     setHero(info);
-                    localStorage.setItem("hero", JSON.stringify({
+                    localStorage.setItem(heroId, JSON.stringify({
                         payload: info,
                         timestamp: Date.now()
                     }));
-                })
+                  })
         }
 
     }, [])
-
     return (
-        hero && (
-            <div className='fs-2 lh-lg text-justify ms-5'>
-                {Object.entries(hero).map(([key, value]) => (
-                    <p key={key}>
-                        <span className='display-3'>{key.replace("_", " ")}:</span> {value}
-                    </p>
-                ))}
-            </div>
-        )
-        // <>
-        //     {(!!hero) &&
-        //         <div className='fs-2 lh-lg text-justify ms-5'>
-        //             <p><span className='display-3'>name:</span> {hero.name}</p>
-        //             <p><span className='display-3'>gender:</span> {hero.gender}</p>
-        //             <p><span className='display-3'>birth year:</span> {hero.birth_year}</p>
-        //             <p><span className='display-3'>height:</span> {hero.height}</p>
-        //             <p><span className='display-3'>mass:</span> {hero.mass}</p>
-        //             <p><span className='display-3'>hair color:</span> {hero.hair_color}</p>
-        //             <p><span className='display-3'>skin color:</span> {hero.skin_color}</p>
-        //             <p><span className='display-3'>eye color:</span> {hero.eye_color}</p>
-        //         </div>
-        //     }
-        // </>
+        <>
+            {(!!hero) &&
+                <div className='fs-2 lh-lg text-justify ms-5'>
+                    {Object.keys(hero).map(key => <p key={key}>
+                        <span className={'display-3'}>{key.replace('_', ' ')}</span>: {hero[key as keyof HeroInfo]}
+                    </p>)}
+                </div>
+            }
+        </>
     );
 };
 
