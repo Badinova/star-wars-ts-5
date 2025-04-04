@@ -66,9 +66,10 @@ export const characters: Characters = {
         url: `${base_url+version}/transports/10`
     }
 };
-export const defaultHero = 'luke'
+export const friends = Object.keys(characters);
+export const defaultHero = friends[0];
 export const period_month = 30 * 24 * 60 * 60 * 1000;
-export const friends = [friend1, friend2, friend3, friend4, friend5, friend6, friend7, friend8, friend9];
+
 export const navItems: Item[] = [
     {title: 'Home', path: 'home'},
     {title: 'About Me', path: 'about_me'},

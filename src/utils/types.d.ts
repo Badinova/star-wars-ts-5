@@ -1,3 +1,5 @@
+import hero from "../components/Hero.tsx";
+
 export interface HeroInfo {
     name: string,
     gender: string,
@@ -18,7 +20,7 @@ export interface Item {
     path: string,
 }
 
-export interface Heri {
+export interface Hero {
     name: string,
     img: string,
     url: string
@@ -26,4 +28,8 @@ export interface Heri {
 
 export interface Characters {
     [key: string]: Hero
+}
+export interface SWContextValue {
+    hero: string,
+    changeHero: (hero: string) => void
 }
