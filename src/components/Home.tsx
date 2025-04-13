@@ -1,33 +1,19 @@
-import Hero from "./Hero.tsx";
-import DreamTeam from "./DreamTeam.tsx";
-import FarGalaxy from "./FarGalaxy.tsx";
-import {characters, defaultHero} from "../utils/constants.ts";
-import {useParams} from "react-router";
-import {useContext, useEffect} from "react";
-import {SWContext} from "../utils/context.ts";
-import ErrorPage from "./ErrorPage.tsx";
+import Hero from "./Hero";
+import DreamTeam from "./DreamTeam";
+import FarGalaxy from "./FarGalaxy";
+import useHeroId from "../hooks/useHero.ts";
+import ErrorPage from "./ErrorPage";
 
 const Home = () => {
+    const { isValidHero } = useHeroId();
 
-    let {heroId = defaultHero} = useParams();
-    const {changeHero} = useContext(SWContext);
-
-    useEffect(() => {
-        if (!characters[heroId]) {
-            heroId = defaultHero;
-        }
-        changeHero(heroId);
-    }, [heroId]);
-
-    if (!characters[heroId]) {
-        return <ErrorPage />;
-    }
+    if (!isValidHero) return <ErrorPage />;
 
     return (
         <main className="clearfix">
-            <Hero/>
-            <DreamTeam/>
-            <FarGalaxy/>
+            <Hero />
+            <DreamTeam />
+            <FarGalaxy />
         </main>
     );
 };

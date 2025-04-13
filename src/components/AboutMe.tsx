@@ -1,60 +1,59 @@
-import {characters, defaultHero, period_month} from "../utils/constants.ts";
-import {useContext, useEffect, useState} from "react";
-import {HeroInfo} from "../utils/types";
-import {useParams} from "react-router";
-import {SWContext} from "../utils/context.ts";
-import ErrorPage from "./ErrorPage.tsx";
+import { useEffect, useState } from "react";
+import useHeroId from "../hooks/useHero.ts";
+import { characters, period_month } from "../utils/constants";
+import { HeroInfo } from "../utils/types";
+import ErrorPage from "./ErrorPage";
 
 const AboutMe = () => {
+    const { heroId, isValidHero } = useHeroId();
     const [hero, setHero] = useState<HeroInfo>();
-    let {heroId = defaultHero} = useParams();
-    const {changeHero} = useContext(SWContext)
 
     useEffect(() => {
-        if(!characters[heroId]){
-            heroId = defaultHero;
-        }
-        changeHero(heroId);
+        if (!isValidHero) return;
 
-        const hero = JSON.parse(localStorage.getItem(heroId)!);
-        if (hero && ((Date.now() - hero.timestamp) < period_month)) {
-            setHero(hero.payload);
-        } else {
-            fetch(characters[heroId].url)
-                .then(response => response.json())
-                .then(data => {
-                    const info = {
-                        name: data.name,
-                        gender: data.gender,
-                        birth_year: data.birth_year,
-                        height: data.height,
-                        mass: data.mass,
-                        hair_color: data.hair_color,
-                        skin_color: data.skin_color,
-                        eye_color: data.eye_color
-                    }
-                    setHero(info);
-                    localStorage.setItem(heroId, JSON.stringify({
-                        payload: info,
-                        timestamp: Date.now()
-                    }));
-                  })
+        const saved = localStorage.getItem(heroId);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Date.now() - parsed.timestamp < period_month) {
+                setHero(parsed.payload);
+                return;
+            }
         }
 
-    }, [])
-    if (!characters[heroId]) {
-        return <ErrorPage />;
-    }
+        fetch(characters[heroId].url)
+            .then(res => res.json())
+            .then(data => {
+                const info: HeroInfo = {
+                    name: data.name,
+                    gender: data.gender,
+                    birth_year: data.birth_year,
+                    height: data.height,
+                    mass: data.mass,
+                    hair_color: data.hair_color,
+                    skin_color: data.skin_color,
+                    eye_color: data.eye_color
+                };
+                setHero(info);
+                localStorage.setItem(heroId, JSON.stringify({
+                    payload: info,
+                    timestamp: Date.now()
+                }));
+            });
+    }, [heroId, isValidHero]);
+
+    if (!isValidHero) return <ErrorPage />;
 
     return (
         <>
-            {(!!hero) &&
+            {hero && (
                 <div className='fs-2 lh-lg text-justify ms-5'>
-                    {Object.keys(hero).map(key => <p key={key}>
-                        <span className={'display-3'}>{key.replace('_', ' ')}</span>: {hero[key as keyof HeroInfo]}
-                    </p>)}
+                    {Object.keys(hero).map(key => (
+                        <p key={key}>
+                            <span className="display-3">{key.replace('_', ' ')}</span>: {hero[key as keyof HeroInfo]}
+                        </p>
+                    ))}
                 </div>
-            }
+            )}
         </>
     );
 };
